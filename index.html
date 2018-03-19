@@ -1,10 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="cs">
     <head>
+        <meta charset="UTF-8">
+        <meta name="author" content="Daniel Cech">
+        <meta name="description" content="*** description ***">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <title>Dice game</title>
+
+        <link rel="stylesheet" href="css/bootstrap4.css">
+        <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
 
+        
+        <div id="board">
+            <div id="score">
+                <p>points: <span id="points"></span></p>
+            </div>
+            <div id="game">
+                <img width="104" height="104" src="images/1.png" class="dice" id = "1">
+                <img width="104" height="104" src="images/2.png" class="dice" id = "2">
+                <img width="104" height="104" src="images/3.png" class="dice" id = "3">
+                <img width="104" height="104" src="images/4.png" class="dice" id = "4">
+                <img width="104" height="104" src="images/5.png" class="dice" id = "5">
+                <img width="104" height="104" src="images/6.png" class="dice" id = "6">
+            </div>
+            <div id="controlls">
+
+            </div>
+            <div id="log">
+                
+            </div>
+        </div>
+
+
+        <audio id="ride" src="css/audio/ride.wav"></audio>
+        <audio id="tink" src="css/audio/tink.wav"></audio>
+        
         <script src="js/script.js"></script>
     </body>
 </html>
