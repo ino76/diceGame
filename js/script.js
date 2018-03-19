@@ -174,6 +174,10 @@ class Game {
         this.points = 0
         this.tempPoints = 0
         this.log = document.getElementById('log')
+        this.soundCoins = document.getElementById('coins')
+        this.soundRoll = document.getElementById('roll')
+        this.soundTemp = document.getElementById('temp')
+        this.soundBad = document.getElementById('bad')
     }
 
     showLog(message) {
@@ -261,6 +265,8 @@ class Game {
     // metoda hodi nova cisla na vsech aktivnich neoznacenych kostkach
     throw() {
         this.cup.throwUnselected()
+        this.soundRoll.currentTime = 0
+        this.soundRoll.play()
     }
 
 
@@ -274,11 +280,17 @@ class Game {
     tryToThrowAgain(selectedPoints) {
         if (selectedPoints > 0) {
             this.tempPoints += selectedPoints
-            game.throw()
+            setTimeout(function(){
+                game.throw()
+            }, 2000)
+            this.soundTemp.currentTime = 0
+            this.soundTemp.play()
             this.showLog(`You throwed <span class="white">${selectedPoints}</span> points. You have <span class="gold">${this.tempPoints}</span> points in your temporary storage.`)
         } else {
             this.tempPoints = 0
             this.showLog(`Bad luck.`)
+            this.soundBad.currentTime = 0
+            this.soundBad.play()
         }
     }
 
@@ -287,11 +299,17 @@ class Game {
         if (selectedPoints > 0) {
             this.points += this.tempPoints + selectedPoints
             document.getElementById('points').innerText = this.points
-            game.newThrow()
+            setTimeout(function(){
+                game.newThrow()
+            }, 2000)
             this.showLog(`You saved <span class="gold">${this.tempPoints + selectedPoints}</span> new points.`)
+            this.soundCoins.currentTime = 0
+            this.soundCoins.play()
             this.tempPoints = 0
         } else {
             this.showLog(`Bad luck.`)
+            this.soundBad.currentTime = 0
+            this.soundBad.play()
         }  
     }
 }
@@ -336,4 +354,4 @@ document.addEventListener('keydown', function(e) {
 })
 
 
-// game.evaluate(cup.dice)
+game.throw()

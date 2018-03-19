@@ -3,6 +3,7 @@
 */
 
 @import url('https://fonts.googleapis.com/css?family=Press+Start+2P');
+@import url('https://fonts.googleapis.com/css?family=Amita');
 
 body, html {
     margin: 0;
@@ -28,6 +29,10 @@ body {
 
 #score {
     /* border: 1px solid red; */
+    font-family: 'Amita', cursive;
+    font-size: 2.8rem;
+    color: #16bc47;
+    color: #666666;
     width: 90vw;
     height: 90vh;
     display: flex;
@@ -77,6 +82,7 @@ body {
 .selected {
     border-radius: 15px;
     border: 3px solid rgb(255, 0, 157);
+    /* border: 3px solid #008026; */
 }
 
 .gold {
