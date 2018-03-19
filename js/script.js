@@ -177,7 +177,7 @@ class Game {
     }
 
     showLog(message) {
-        this.log.innerHTML += `<p>${message}</p>g`
+        this.log.innerHTML += `<p>${message}</p>`
     }
 
     evaluate(givenDice) {
@@ -275,10 +275,10 @@ class Game {
         if (selectedPoints > 0) {
             this.tempPoints += selectedPoints
             game.throw()
-            this.showLog(`Hodil jsi <span class="grey">${selectedPoints}</span> a zatim mas docasne ulozeno  <span class="gold">${this.tempPoints}</span>.`)
+            this.showLog(`You throwed <span class="white">${selectedPoints}</span> points. You have <span class="gold">${this.tempPoints}</span> points in your temporary storage.`)
         } else {
             this.tempPoints = 0
-            this.showLog(`Hodil jsi ${selectedPoints} a mas zase hovno`)
+            this.showLog(`Bad luck.`)
         }
     }
 
@@ -288,10 +288,10 @@ class Game {
             this.points += this.tempPoints + selectedPoints
             document.getElementById('points').innerText = this.points
             game.newThrow()
-            this.showLog(`ulozil jsi <span class="gold">${this.tempPoints + selectedPoints}</span> bodu.`)
+            this.showLog(`You saved <span class="gold">${this.tempPoints + selectedPoints}</span> new points.`)
             this.tempPoints = 0
         } else {
-            this.showLog(`zatim mas leda hovno`)
+            this.showLog(`Bad luck.`)
         }  
     }
 }

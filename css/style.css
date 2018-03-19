@@ -59,6 +59,7 @@ body {
     background: rgb(8, 8, 8);
     font-family: 'Press Start 2P', cursive;
     font-size: .7rem;
+    color: rgb(134, 134, 134);
     border-left: 2px solid rgb(39, 39, 39);
     border-top: 2px solid rgb(22, 22, 22);
     border-right: 2px solid rgb(68, 68, 68);
@@ -82,6 +83,6 @@ body {
     color: rgb(235, 212, 6);
 }
 
-.grey {
-    color: rgb(196, 196, 196);
+.white {
+    color: rgb(255, 255, 255);
 }
