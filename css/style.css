@@ -56,12 +56,12 @@ body {
 }
 
 #log {
-    background: #333;
+    background: rgb(8, 8, 8);
     font-family: 'Press Start 2P', cursive;
     font-size: .7rem;
-    border-left: 2px solid rgb(41, 41, 41);
-    border-top: 2px solid rgb(41, 41, 41);
-    border-right: 1px solid rgb(99, 99, 99);
+    border-left: 2px solid rgb(39, 39, 39);
+    border-top: 2px solid rgb(22, 22, 22);
+    border-right: 2px solid rgb(68, 68, 68);
     width: 60vw;
     height: 90vh;
     padding: 20px;
@@ -78,3 +78,10 @@ body {
     border: 3px solid rgb(255, 0, 157);
 }
 
+.gold {
+    color: rgb(235, 212, 6);
+}
+
+.grey {
+    color: rgb(196, 196, 196);
+}

@@ -275,10 +275,10 @@ class Game {
         if (selectedPoints > 0) {
             this.tempPoints += selectedPoints
             game.throw()
-            console.log(`hodil jsi ${selectedPoints} a zatim mas docasne ulozeno ${this.tempPoints}`)
+            this.showLog(`Hodil jsi <span class="grey">${selectedPoints}</span> a zatim mas docasne ulozeno  <span class="gold">${this.tempPoints}</span>.`)
         } else {
             this.tempPoints = 0
-            console.log(`hodil jsi ${selectedPoints} a mas zase hovno`)
+            this.showLog(`Hodil jsi ${selectedPoints} a mas zase hovno`)
         }
     }
 
@@ -288,10 +288,10 @@ class Game {
             this.points += this.tempPoints + selectedPoints
             document.getElementById('points').innerText = this.points
             game.newThrow()
-            console.log("ulozil jsi " + (this.tempPoints + selectedPoints) + " bodu")
+            this.showLog(`ulozil jsi <span class="gold">${this.tempPoints + selectedPoints}</span> bodu.`)
             this.tempPoints = 0
         } else {
-            console.log(`zatim mas leda hovno`)
+            this.showLog(`zatim mas leda hovno`)
         }  
     }
 }
