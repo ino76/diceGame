@@ -4,8 +4,9 @@ class Dice {
 
     constructor(id) {
         this.id = id
-        this._activated = true
-        this._selected = false
+        this._activated = true // znaci zda je kostka jeste ve hre
+        this._selected = false // znaci zda je kostka oznacena hracem
+        this._betweenRounds =  // znaci zda se kostka nachazi ve fazi mezi koly kdy ji nelze oznacovat
         this.HTML = document.getElementById(id)
         this.number = this.throw()
     }
@@ -181,7 +182,9 @@ class Game {
     }
 
     showLog(message) {
-        this.log.innerHTML += `<p>${message}</p>`
+        let temp = this.log.innerHTML
+        this.log.innerHTML = `<p>${message}</p>`
+        this.log.innerHTML += temp
     }
 
     evaluate(givenDice) {
@@ -280,6 +283,7 @@ class Game {
     tryToThrowAgain(selectedPoints) {
         if (selectedPoints > 0) {
             this.tempPoints += selectedPoints
+            document.getElementById('roundPoints').innerText = this.tempPoints
             setTimeout(function(){
                 game.throw()
             }, 2000)
@@ -302,10 +306,11 @@ class Game {
             setTimeout(function(){
                 game.newThrow()
             }, 2000)
-            this.showLog(`You saved <span class="gold">${this.tempPoints + selectedPoints}</span> new points.`)
+            this.showLog(`You saved <span class="white">${this.tempPoints + selectedPoints}</span> new points. Now you have <span class="gold">${this.points}</span> points.`)
             this.soundCoins.currentTime = 0
             this.soundCoins.play()
             this.tempPoints = 0
+            document.getElementById('roundPoints').innerText = this.tempPoints
         } else {
             this.showLog(`Bad luck.`)
             this.soundBad.currentTime = 0

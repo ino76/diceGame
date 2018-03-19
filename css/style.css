@@ -29,26 +29,22 @@ body {
 
 #score {
     /* border: 1px solid red; */
-    font-family: 'Amita', cursive;
-    font-size: 2.8rem;
+    font-size: 1rem;
     color: #16bc47;
     color: #666666;
-    width: 90vw;
-    height: 90vh;
-    display: flex;
+    width: 60vw;
     justify-content: center;
 }
 
 #score p {
-    display: block;
-    align-self: flex-end;
+    font-family: 'Press Start 2P', cursive;
 }
 
 #game {
     /* border: 1px solid rgb(0, 38, 255); */
     display: flex;
     justify-content: center;
-    align-content: top;
+    align-content: center;
     flex-wrap: wrap;
     height: 90vh;
     width: 90vw;
@@ -70,8 +66,9 @@ body {
     border-top: 2px solid rgb(22, 22, 22);
     border-right: 2px solid rgb(68, 68, 68);
     width: 60vw;
-    height: 90vh;
+    height: 30vh;
     padding: 20px;
+    overflow: hidden;
 }
 
 .dice {
@@ -94,4 +91,9 @@ body {
 
 .white {
     color: rgb(255, 255, 255);
+}
+
+.hide {
+    display: none;
+    visibility: hidden;
 }
