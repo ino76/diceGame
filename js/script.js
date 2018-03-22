@@ -1,4 +1,12 @@
-// Script
+// **********************************************************************
+// 
+//      DICE
+// 
+//      Trida dice - kostka, uchovava informace o dane
+//      kostce, jako aktualni hodnotu, zda je aktivovana
+//      apod.
+// 
+// **********************************************************************
 
 class Dice {
 
@@ -6,7 +14,6 @@ class Dice {
         this.id = id
         this._activated = true // znaci zda je kostka jeste ve hre
         this._selected = false // znaci zda je kostka oznacena hracem
-        this._betweenRounds =  // znaci zda se kostka nachazi ve fazi mezi koly kdy ji nelze oznacovat
         this.HTML = document.getElementById(id)
         this.number = this.throw()
     }
@@ -18,167 +25,224 @@ class Dice {
         return newNumber
     }
 
-    selected(value) {
-        this._selected = value
-        if (value === true) {
+    selectToggle() {
+
+        this._selected == !this._selected
+
+        if (this._selected) {
             this.HTML.classList.add('selected')
         } else {
             this.HTML.classList.remove('selected')
         }
     }
 
-    activated(value) {
-        this._activated = value
-        if (value === false) {
+    activateToggle() {
+
+        this._activated == !this._activated
+
+        if (this._activated) {
             this.HTML.src = `images/${this.number}ghost.png`
         } else {
             this.HTML.src = `images/${this.number}.png`
         }
     }
-
-    switchSelect() {
-        this.selected(!this._selected)
-    }
 }
 
 
+
+// **********************************************************************
+// 
+//      CUP
+// 
+//      Trida cup - kelimek, se v podstate hromadne stara o stavy
+//      kostek, oznacuje, hazi, deaktivuje
+// 
+// **********************************************************************
+
 class Cup {
 
-    constructor(dice) {
-        this.dice = dice
+    constructor() {
+        this.first      = new Dice(1)
+        this.seccond    = new Dice(2)
+        this.third      = new Dice(3)
+        this.fourth     = new Dice(4)
+        this.fifth      = new Dice(5)
+        this.sixth      = new Dice(6)
         this.selected = []
+
+        this.dice = [this.first, this.seccond, this.third, this.fourth, this.fifth, this.sixth]
     }
 
 
-    toggleDice(d) {
-        if(this.dice[d]._selected == false) {
-            this.selectDice(d)
-            this.selected
-        } else {
-            this.unselectDice(d)
-            this.selected
-        }
-    }
+    // tak tohle je me prvni pouziti veci ktere se rika 'clojure' ;D
+    // jo a zaroven je to tzv. 'pure function', uzasne :)
+    iterate(listOfSomething) {
+        return function(activeOrSelected, trueOrFalse) {
+            let list = []
+            for (let something of listOfSomething) {
 
-    selectDice(d) {
-        dice[d].selected(true)
-        this.selected.push(dice[d])
-    }
+                switch(activeOrSelected) {
+                    case "activated": if(something._activated === trueOrFalse) {
+                                        list.push(something)
+                    }
+                    break
 
-    unselectDice(d) {
-        dice[d].selected(false)
-        this.selected = []
-        let selectedDices = this.getSelected()
-        for (let s of selectedDices) {
-            if (s._selected == true) {
-                this.selected.push(s)
+                    case "selected": if(something._selected === trueOrFalse) {
+                                        list.push(something)
+                    }
+                    break                  
+                }  
             }
+            return list
         }
     }
 
 
-    getDiceNumber(x) {
-        return this.dice[x].number
-    }
-
-    getAllNumbers() {
-        let numbers = []
-        for(let d of this.dice) {
-            numbers.push(d.number)
-        }
-
-        return numbers
-    }
-
-    getSelected() {
-        let selected = []
-        for(let d of this.dice) {
-            if(d._selected == true) {
-                selected.push(d)
-            }
-        }
-
-        return selected
+    // metoda vyuziva 'clojure' kod iterate(something) lze ji nastavit tak ze vrati seznam 
+    // kostek ktere chceme napr. getDice('activated', true) vrati seznam kostek
+    // ktere jsou aktivovane
+    getDice(activeOrSelected, trueOrFalse) {
+        return this.iterate(this.dice)(activeOrSelected, trueOrFalse)
     }
 
 
-    getUnselected() {
-        let unselected = []
-        for(let d of this.dice) {
-            if(d._selected == false) {
-                unselected.push(d)
-            }
-        }
 
-        return unselected
+    // priradi event listener kazde kostce v prohlizeci a po kliknuti
+    // na jeji obrazek zjisti id obrazku a najde dotycny objekt
+    // v poli 'dice': dice[e.target.id - 1]
+    addListeners() {
+        this.dice.forEach(d => d.HTML.addEventListener('click', function(e){
+            console.log(e)
+            this.selectDice(e.target.id - 1)
+        }))
     }
 
-    unselectAll() {
-        for(let d of this.dice) {
-            if(d._selected == true) {
-                d.selected(false)
-            }
-        }
+    selectDice() {
 
-        this.selected = []
-    }
-
-    // metoda nejen aktivuje ale take odznaci vsechny kostky
-    activateAll() {
-        this.unselectAll()
-        for(let d of this.dice) {
-            if(d._activated == false) {
-                d.activated(true)
-            }
-        }
-    }
-
-    deactivateSelected() {
-        let selected = this.getSelected()
-        for (let s of selected) {
-            s.activated(false)
-            s.selected(false)
-        }
-    }
-
-    isAllDeactivated() {
-        let count = 0
-        this.dice.forEach(d => {if(d._activated == false) {count++}} )
-        if(count == 6) {
-            return true
-        }
-        return false
-    }
-
-    throwAll() {
-        for(let d of this.dice) {
-            d.throw()
-        }
-    }
-
-    throwUnselected() {
-        for(let d of this.dice) {
-            if (d._selected == false && d._activated == true) {
-                d.throw()
-            }
-        }
-        this.unselectAll()
     }
     
 }
 
+// **********************************************************************
+// 
+//      PLAYER
+// 
+//      Trida player - hrac, si pamatuje kolik mu jeste zbyva 
+//      zivotu a tahu a ma metody aby je ukazal na obrazovce
+// 
+// **********************************************************************
+
+class Player {
+    constructor() {
+        this.lives = 3
+        this.rounds = 10
+        this.HTMLrounds = document.getElementById('rounds')
+        this.live1Img = document.getElementById('live1')
+        this.live2Img = document.getElementById('live2')
+        this.live3Img = document.getElementById('live3')
+        this.livesImg = [this.live1Img, this.live2Img, this.live3Img]
+    }
+
+    showLives() {
+        for (let heart of this.livesImg) {
+            if(heart.dataset.alive == "true") {
+                heart.src = "images/heart.png"
+                console.log(heart.id + " je nazivu")
+            } else if(heart.dataset.alive == "false"){
+                heart.src = "images/heartDead.png"
+                console.log(heart.id + " je mrtve")
+            }
+        }
+    }
+
+    showRounds() {
+        this.HTMLrounds.innerText = ""
+
+        for (let r = 0; r < this.rounds; r++) {
+            this.HTMLrounds.innerText += "|"
+        }
+    }
+
+    removeLive() {
+        if (this.lives > 0) {
+            let deadHeart = document.getElementById('live' + this.lives)
+            deadHeart.dataset.alive = "false"
+            this.lives--
+            this.showLives()
+        } else {
+            console.log('uz nemas zivoty')
+        }
+    }
+
+    addLive() {
+        if (this.lives > 0 && this.lives < 3) {
+            let deadHeart = document.getElementById('live' + (this.lives + 1))
+            deadHeart.dataset.alive = "true"
+            this.lives++
+            this.showLives()
+        } else {
+            console.log('jsi mrtvy nebo uz mas plne zivoty')
+        }
+    }
+}
+
+
+
+
+// **********************************************************************
+// 
+//      ROUND
+// 
+//      trida round - kolo, se stara o prubeh kola od zacatku do konce
+//      hlida si vse co je potreba a zajistuje bezchybny prubeh hry
+// 
+// **********************************************************************
+
+class Round {
+    constructor() {
+        this.round = 0
+
+    }
+}
+
+
+
+
+// **********************************************************************
+// 
+//      GAME
+// 
+//      trida game - hra, je hlavni trida hry. Ma metody pro vypis
+//      na konzoli, metodu throw a hlavne metodu evaluate ktera prijme
+//      kostky a vrati vysledny pocet bodu. Take ma metodu throw ktera
+//      obsluhuje podrizene metody tridy cup. 
+// 
+// **********************************************************************
 
 class Game {
 
-    constructor(cup) {
-        this.cup = cup
-        this.points = 0
-        this.tempPoints = 0
-        this.log = document.getElementById('log')
+    constructor() {
+        // objects
+        this.cup        = new Cup()
+        this.round      = new Round()
+        this.player     = new Player()
+
+        // points
+        this.safePoints = 0
+        this.potPoints  = 0
+
+        // delay
+        this.delay      = 2000
+
+        // html bindings
+        this.log        = document.getElementById('log')
         this.soundCoins = document.getElementById('coins')
-        this.soundRoll = document.getElementById('roll')
-        this.soundTemp = document.getElementById('temp')
-        this.soundBad = document.getElementById('bad')
+        this.soundRoll  = document.getElementById('roll')
+        this.soundTemp  = document.getElementById('temp')
+        this.soundBad   = document.getElementById('bad')
+
+        // add listener for 'click' on each dice
+        this.cup.addListeners()
     }
 
     showLog(message) {
@@ -256,18 +320,12 @@ class Game {
             this.cup.unselectAll()
         })
 
-        // zkouska zda jsou jiz deaktivovany vsechny kostky
-        // pokud ano, znovu je aktivuj
-        if (this.cup.isAllDeactivated()) {
-            this.cup.activateAll()
-        }
 
         return points
     }
 
     // metoda hodi nova cisla na vsech aktivnich neoznacenych kostkach
     throw() {
-        this.cup.throwUnselected()
         this.soundRoll.currentTime = 0
         this.soundRoll.play()
     }
@@ -282,16 +340,16 @@ class Game {
     
     tryToThrowAgain(selectedPoints) {
         if (selectedPoints > 0) {
-            this.tempPoints += selectedPoints
-            document.getElementById('roundPoints').innerText = this.tempPoints
+            this.potPoints += selectedPoints
+            document.getElementById('roundPoints').innerText = this.potPoints
             setTimeout(function(){
                 game.throw()
-            }, 2000)
+            }, delay)
             this.soundTemp.currentTime = 0
             this.soundTemp.play()
-            this.showLog(`You throwed <span class="white">${selectedPoints}</span> points. You have <span class="gold">${this.tempPoints}</span> points in your temporary storage.`)
+            this.showLog(`You added <span class="white">${selectedPoints}</span> points in your pot.`)
         } else {
-            this.tempPoints = 0
+            this.potPoints = 0
             this.showLog(`Bad luck.`)
             this.soundBad.currentTime = 0
             this.soundBad.play()
@@ -301,16 +359,17 @@ class Game {
 
     savePointsAndThrowAgain(selectedPoints) {
         if (selectedPoints > 0) {
-            this.points += this.tempPoints + selectedPoints
-            document.getElementById('points').innerText = this.points
+            this.safePoints += this.potPoints + selectedPoints
+            document.getElementById('points').innerText = this.safePoints
             setTimeout(function(){
                 game.newThrow()
-            }, 2000)
-            this.showLog(`You saved <span class="white">${this.tempPoints + selectedPoints}</span> new points. Now you have <span class="gold">${this.points}</span> points.`)
+            }, delay)
+            this.showLog(`You saved <span class="gold">${this.potPoints + selectedPoints}</span> points into your safe.`)
             this.soundCoins.currentTime = 0
             this.soundCoins.play()
-            this.tempPoints = 0
-            document.getElementById('roundPoints').innerText = this.tempPoints
+            this.potPoints = 0
+            document.getElementById('roundPoints').innerText = this.potPoints
+            this.cup.deactivateAll()
         } else {
             this.showLog(`Bad luck.`)
             this.soundBad.currentTime = 0
@@ -320,26 +379,22 @@ class Game {
 }
 
 
-// END OF CLASSES
-
-const first     = new Dice(1)
-const seccond   = new Dice(2)
-const third     = new Dice(3)
-const fourth    = new Dice(4)
-const fifth     = new Dice(5)
-const sixth     = new Dice(6)
-const dice      = [first, seccond, third, fourth, fifth, sixth]
-const cup       = new Cup(dice)
-const game      = new Game(cup)
 
 
+// **********************************************************************
+// 
+//      End of class declarations
+// 
+/////////////////////////////////////
+// 
+//      Start of defining program constants, listeners etc.
+// 
+// **********************************************************************
 
-dice.forEach(d => d.HTML.addEventListener('click', function(e){
-    // priradi event listener kazde kostce v prohlizeci a po kliknuti
-    // na jeji obrazek zjisti id obrazku a najde dotycny objekt
-    // v poli 'dice': dice[e.target.id - 1]
-    cup.toggleDice(e.target.id - 1)
-}))
+const game = new Game()
+
+
+
 
 
 // listener ovladani klavesnici
@@ -352,11 +407,27 @@ document.addEventListener('keydown', function(e) {
         case 32: game.tryToThrowAgain(selectedPoints)
         break;
 
-        // enter: ulozit a hodit znovu TODO dodelat fazi 'ulozit'
+        // enter: ulozit a hodit znovu
         case 13: game.savePointsAndThrowAgain(selectedPoints)
         break;
     }
 })
+
+// ovladani tlacitky
+function controll(signal) {
+
+    let selectedPoints = game.evaluate(game.cup.selected)
+
+    switch(signal) {
+        // mezernik: znovu hodit neoznacenymi
+        case "mezernik": game.tryToThrowAgain(selectedPoints)
+        break;
+
+        // enter: ulozit a hodit znovu
+        case "enter": game.savePointsAndThrowAgain(selectedPoints)
+        break;
+    }
+}
 
 
 game.throw()

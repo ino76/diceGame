@@ -10,11 +10,27 @@
 
         <link rel="stylesheet" href="css/bootstrap4.css">
         <link rel="stylesheet" href="css/style.css">
+
+        <link rel="apple-touch-icon-precomposed" href="images/icon/apple-touch-icon-152x152-precomposed.png">
+        <link rel="icon" href="images/icon/favicon.png">
+        <!--[if IE]><link rel="shortcut icon" href="images/icon/favicon.ico"><![endif]-->
+        <meta name="msapplication-TileColor" content="#fff">
+        <meta name="msapplication-TileImage" content="images/icon/tileicon.png">
     </head>
     <body>
 
         
         <div id="board">
+                <div id="ui">
+                    <div id="lives">
+                        <img src="images/heart.png" id="live1" data-alive="true">
+                        <img src="images/heart.png" id="live2" data-alive="true">
+                        <img src="images/heart.png" id="live3" data-alive="true">
+                    </div>
+                    <div id="rounds">
+                        <p><span id="rounds">||||||||</span></p>
+                    </div>
+                </div>
             
             <div id="game">
                 <img width="104" height="104" src="images/1.png" class="dice" id = "1">
@@ -25,11 +41,12 @@
                 <img width="104" height="104" src="images/6.png" class="dice" id = "6">
             </div>
             <div id="controlls">
-
+                    <img id="space" src="images/space.png" onclick="controll('mezernik')">
+                    <img id="enter" src="images/enter.png" onclick="controll('enter')">
             </div>
             <div id="score" class="">
-                <p class="float-right">Points: <span class="white" id="points"></span></p>
-                <p class="float-left">This round: <span class="white" id="roundPoints"></span></p>
+                <p>Pot: <span class="white" id="roundPoints"></span></p>
+                <p>Safe: <span class="gold" id="points"></span></p>
             </div>
             <div id="log">
                 
