@@ -27,7 +27,7 @@ class Dice {
 
     selectToggle() {
 
-        this._selected == !this._selected
+        this._selected = !this._selected
 
         if (this._selected) {
             this.HTML.classList.add('selected')
@@ -38,7 +38,7 @@ class Dice {
 
     activateToggle() {
 
-        this._activated == !this._activated
+        this._activated = !this._activated
 
         if (this._activated) {
             this.HTML.src = `images/${this.number}ghost.png`
@@ -113,12 +113,13 @@ class Cup {
     addListeners() {
         this.dice.forEach(d => d.HTML.addEventListener('click', function(e){
             console.log(e)
-            this.selectDice(e.target.id - 1)
+            let dice = this.dice[e.target.id - 1]
+            this.selectDice(dice)
         }))
     }
 
-    selectDice() {
-
+    selectDice(dice) {
+        dice.selectToggle()
     }
     
 }
@@ -145,10 +146,10 @@ class Player {
 
     showLives() {
         for (let heart of this.livesImg) {
-            if(heart.dataset.alive == "true") {
+            if(heart.dataset.alive === "true") {
                 heart.src = "images/heart.png"
                 console.log(heart.id + " je nazivu")
-            } else if(heart.dataset.alive == "false"){
+            } else if(heart.dataset.alive === "false"){
                 heart.src = "images/heartDead.png"
                 console.log(heart.id + " je mrtve")
             }
@@ -298,13 +299,13 @@ class Game {
         for (let n of numbers) {
             if (n >= 3) {
                 givenDice.forEach(d => {
-                    if(d.number == counter && d._selected == true && d._activated == true) {
+                    if(d.number === counter && d._selected === true && d._activated === true) {
                         toDeactivate.push(d)
                     }
                 })
 
                 // pokud jsme na zacatku .. tzn. jde o jednicku tak nastavime nasobitel na tisic
-                if (counter == 1) {
+                if (counter === 1) {
                     multiplier = 1000
                 } else {
                     multiplier = 100
