@@ -144,6 +144,10 @@ class Cup {
         this.dice.forEach(d => {if(d._activated) {d.activateToggle()}})
     }
 
+    activateAll() {
+        this.dice.forEach(d => {if(!d._activated) {d.activateToggle()}})
+    }
+
 
     // nastavi vsechny kostky na unselect & activated
     prepadeDice() {
@@ -157,6 +161,10 @@ class Cup {
         return this.getDice('activated', true)
     }
 
+    getSelected() {
+        return this.getDice('selected', true)
+    }
+
 
 
     // priradi event listener kazde kostce v prohlizeci a po kliknuti
@@ -168,7 +176,6 @@ class Cup {
         let select = this.selectDice
 
         this.dice.forEach(d => d.HTML.addEventListener('click', function(e){
-            console.log('zavolano')
             let dice = dicelist[e.target.id - 1]
             select(dice)
         }))
@@ -269,19 +276,30 @@ class Game {
 
         // round counter
         this.round      = 1
-        this.rundUp     = true
+        this.roundUp    = true
+        this.newThrow   = false
+        this.addedToPot = false
 
         // html bindings
+        this.HTMLpot    = document.getElementById('pot')
+        this.HTMLsafe   = document.getElementById('safe')
         this.log        = document.getElementById('log')
         this.soundCoins = document.getElementById('coins')
         this.soundRoll  = document.getElementById('roll')
-        this.soundTemp  = document.getElementById('temp')
+        this.soundPo    = document.getElementById('pot')
         this.soundBad   = document.getElementById('bad')
 
         // add listener for 'click' on each dice,
         // and listeners for controls
         this.cup.addDiceListeners()
         this.addKeyboadListeners()
+
+        // priprav kostky
+        this.cup.prepadeDice()
+
+        // nastav pocet bodu
+        this.setPotPoints(0)
+        this.setSafePoints(0)
 
         // privitej hrace
         this.showLog("<span class='green'>Welcome stranger :)</span>")
@@ -423,37 +441,100 @@ class Game {
 
 
     pot() {
-        console.log('pot!')
+        let points = this.evaluate(this.cup.getSelected())
+
+        if (points) {
+            this.soundRoll.currentTime = 0
+            this.soundRoll.play()
+            this.addPotPoints(points)
+            this.HTMLpot.innerHTML = this.potPoints
+            this.showLog(`You added <span class='white'>${points}</span> points to your pot.`)
+            this.addedToPot = true
+
+            if (this.cup.getActivated().length === 0) {
+                this.newThrow = true
+            }
+        } else {
+            this.cup.unselectAll()
+        }
+
+        if (this.addedToPot) {
+            setTimeout(() => {this.start()}, 2500)
+            this.addedToPot = false
+        }
     }
 
 
     safe() {
-        console.log('dice!')
+        let points = this.potPoints + this.evaluate(this.cup.getSelected())
+
+        if (points) {
+            this.soundCoins.currentTime = 0
+            this.soundCoins.play()
+            this.addSafePoints(points)
+            this.setPotPoints(0)
+            this.showLog(`You saved <span class='gold'>${points}</span> points to your safe.`)
+            this.addedToPot = true
+        } else {
+            this.cup.unselectAll()
+        }
+
+
+        if (this.addedToPot) {
+            setTimeout(() => {this.start(); this.cup.activateAll()}, 2500)
+            this.addedToPot = false
+        }
     }
 
 
     badLuck() {
         this.round++
-        this.soundBad.currentTime = 0
+        this.roundUp = true
         this.soundBad.play()
         this.cup.deactivateAll()
-        setTimeout(function() {
+        if (this.potPoints > 0) {
+            this.showLog(`Bad luck. You have lost <span class='red'>${this.potPoints}</span> points from your pot.`)
+        }
+        this.setPotPoints(0)
+        setTimeout(() => {
+            this.cup.prepadeDice()
             this.start()
         }, 2500)
     }
 
+    setSafePoints(numberOfPoints) {
+        this.safePoints = numberOfPoints
+        this.HTMLsafe.innerText = this.safePoints
+    }
+
+    addSafePoints(numberOfPoints) {
+        this.safePoints += numberOfPoints
+        this.HTMLsafe.innerText = this.safePoints
+    }
+
+    setPotPoints(numberOfPoints) {
+        this.potPoints = numberOfPoints
+        this.HTMLpot.innerText = this.potPoints
+    }
+
+    addPotPoints(numberOfPoints) {
+        this.potPoints += numberOfPoints
+        this.HTMLpot.innerText = this.potPoints
+    }
 
 
     start() {
+        if (this.newThrow) {
+            this.newThrow = false
+            this.cup.prepadeDice()
+        }
 
         // oznam kolo
         if (this.roundUp) {
+            this.showLog(`Round <span class='green'>${this.round}.</span>`)
             this.roundUp = false
-            this.showLog("Round <span class='gold'>" + this.round + ".</span>")
         }
         
-        // priprav kostky
-        this.cup.prepadeDice()
 
         // hod kostkami
         this.throw(this.cup.getActivated())

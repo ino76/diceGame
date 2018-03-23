@@ -132,6 +132,10 @@ body {
     color: #00e613;
 }
 
+.red {
+    color: #cc0000;
+}
+
 .white {
     color: rgb(255, 255, 255);
 }
