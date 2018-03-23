@@ -269,6 +269,7 @@ class Game {
 
         // round counter
         this.round      = 1
+        this.rundUp     = true
 
         // html bindings
         this.log        = document.getElementById('log')
@@ -282,42 +283,12 @@ class Game {
         this.cup.addDiceListeners()
         this.addKeyboadListeners()
 
+        // privitej hrace
+        this.showLog("<span class='green'>Welcome stranger :)</span>")
+
         // zahaj hru
         this.start()
     }
-    
-
-
-    // listener ovladani klavesnici
-    addKeyboadListeners() {
-
-        document.addEventListener('keydown', function(e) {
-            switch(e.keyCode) {
-                // mezernik: znovu hodit neoznacenymi
-                case 32: game.pot()
-                    break;
-
-                // enter: ulozit a hodit znovu
-                case 13: game.safe()
-                    break;
-            }
-        })
-    }
-
-    // listener pro ovladani tlacitky
-    buttonControl(signal) {
-
-        switch(signal) {
-            // mezernik: znovu hodit neoznacenymi
-            case "space": this.pot()
-                break;
-
-            // enter: ulozit a hodit znovu
-            case "enter": this.safe()
-                break;
-        }
-    }
-
 
 
     // metoda vypise zpravu na terminalu hry
@@ -407,6 +378,42 @@ class Game {
         return points
     }
 
+
+    
+    // listener ovladani klavesnici
+    addKeyboadListeners() {
+
+        document.addEventListener('keydown', function(e) {
+            switch(e.keyCode) {
+                // mezernik: znovu hodit neoznacenymi
+                case 32: game.pot()
+                    break;
+
+                // enter: ulozit a hodit znovu
+                case 13: game.safe()
+                    break;
+            }
+        })
+    }
+
+
+
+    // listener pro ovladani tlacitky
+    buttonControl(signal) {
+
+        switch(signal) {
+            // mezernik: znovu hodit neoznacenymi
+            case "space": this.pot()
+                break;
+
+            // enter: ulozit a hodit znovu
+            case "enter": this.safe()
+                break;
+        }
+    }
+
+
+
     // metoda hodi nova cisla na vsech aktivnich neoznacenych kostkach
     throw(dice) {
         this.soundRoll.currentTime = 0
@@ -438,22 +445,22 @@ class Game {
 
 
     start() {
-        while (this.player.lives > 0) {
-            // privitani
-            if (this.round === 1) {
-                this.showLog("<span class='green'>Welcome stranger :)</span>")
-            }
-            // oznam kolo
+
+        // oznam kolo
+        if (this.roundUp) {
+            this.roundUp = false
             this.showLog("Round <span class='gold'>" + this.round + ".</span>")
-            // priprav kostky
-            this.cup.prepadeDice()
-            // throw
-            this.throw(this.cup.getActivated())
-            // evaluate them
-            if (this.evaluate(this.cup.getActivated()) === 0) {
-                this.badLuck()
-                continue
-            }
+        }
+        
+        // priprav kostky
+        this.cup.prepadeDice()
+
+        // hod kostkami
+        this.throw(this.cup.getActivated())
+
+        // zjisti zda je nenulovy soucet
+        if (this.evaluate(this.cup.getActivated()) === 0) {
+            this.badLuck()
         }
     }
 }
