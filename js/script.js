@@ -140,12 +140,21 @@ class Cup {
         this.dice.forEach(d => {if(d._selected) {d.selectToggle()}})
     }
 
+    deactivateAll() {
+        this.dice.forEach(d => {if(d._activated) {d.activateToggle()}})
+    }
+
 
     // nastavi vsechny kostky na unselect & activated
     prepadeDice() {
         this.dice.forEach(d => {
             d.prepare()
         })
+    }
+
+
+    getActivated() {
+        return this.getDice('activated', true)
     }
 
 
@@ -281,19 +290,15 @@ class Game {
 
     // listener ovladani klavesnici
     addKeyboadListeners() {
-        let dice = this.cup.dice
-        let selectedPoints = null // this.evaluate(dice)
-        let throwAgain = null
-        let save = null
 
         document.addEventListener('keydown', function(e) {
             switch(e.keyCode) {
                 // mezernik: znovu hodit neoznacenymi
-                case 32: console.log('hod znovu')
+                case 32: game.pot()
                     break;
 
                 // enter: ulozit a hodit znovu
-                case 13: console.log('uloz si to')
+                case 13: game.safe()
                     break;
             }
         })
@@ -302,17 +307,14 @@ class Game {
     // listener pro ovladani tlacitky
     buttonControl(signal) {
 
-        let selectedPoints = null // this.evaluate(dice)
-
         switch(signal) {
             // mezernik: znovu hodit neoznacenymi
-            case "space": this.tryToThrowAgain(selectedPoints)
+            case "space": this.pot()
                 break;
 
             // enter: ulozit a hodit znovu
-            case "enter": this.savePointsAndThrowAgain(selectedPoints)
+            case "enter": this.safe()
                 break;
-        
         }
     }
 
@@ -344,7 +346,9 @@ class Game {
         for(let d of givenDice) {
             switch(d.number) {
                 case 1: one++
-                        toDeactivate.push(d)
+                        if (d._selected) {
+                            toDeactivate.push(d)
+                        }
                 break;
                 case 2: two++
                 break;
@@ -353,7 +357,9 @@ class Game {
                 case 4: four++
                 break;
                 case 5: five++
-                        toDeactivate.push(d)
+                        if (d._selected) {
+                            toDeactivate.push(d)
+                        }
                 break;
                 case 6: six++
                 break;
@@ -402,70 +408,53 @@ class Game {
     }
 
     // metoda hodi nova cisla na vsech aktivnich neoznacenych kostkach
-    throw() {
+    throw(dice) {
         this.soundRoll.currentTime = 0
         this.soundRoll.play()
+        dice.forEach(d => d.throw())
     }
 
 
-    // metoda zaktivuje a odznaci vsechny kostky a hodi nova cisla
-    newThrow() {
-        this.cup.activateAll()
-        this.throw()
+    pot() {
+        console.log('pot!')
     }
 
 
-    tryToThrowAgain(selectedPoints) {
-        if (selectedPoints > 0) {
-            this.potPoints += selectedPoints
-            document.getElementById('roundPoints').innerText = this.potPoints
-            setTimeout(function(){
-                game.throw()
-            }, this.deltaTime)
-            this.soundTemp.currentTime = 0
-            this.soundTemp.play()
-            this.showLog(`You added <span class="white">${selectedPoints}</span> points in your pot.`)
-        } else {
-            this.potPoints = 0
-            this.showLog(`Bad luck.`)
-            this.soundBad.currentTime = 0
-            this.soundBad.play()
-        }
+    safe() {
+        console.log('dice!')
     }
 
 
-    savePointsAndThrowAgain(selectedPoints) {
-        if (selectedPoints > 0) {
-            this.safePoints += this.potPoints + selectedPoints
-            document.getElementById('points').innerText = this.safePoints
-            setTimeout(function(){
-                game.newThrow()
-            }, this.deltaTime)
-            this.showLog(`You saved <span class="gold">${this.potPoints + selectedPoints}</span> points into your safe.`)
-            this.soundCoins.currentTime = 0
-            this.soundCoins.play()
-            this.potPoints = 0
-            document.getElementById('roundPoints').innerText = this.potPoints
-            this.cup.deactivateAll()
-        } else {
-            this.showLog(`Bad luck.`)
-            this.soundBad.currentTime = 0
-            this.soundBad.play()
-        }
+    badLuck() {
+        this.round++
+        this.soundBad.currentTime = 0
+        this.soundBad.play()
+        this.cup.deactivateAll()
+        setTimeout(function() {
+            this.start()
+        }, 2500)
     }
 
 
 
     start() {
-        // privitani
-        if (this.round === 1) {
-            this.showLog("<span class='green'>Welcome stranger :)</span>")
+        while (this.player.lives > 0) {
+            // privitani
+            if (this.round === 1) {
+                this.showLog("<span class='green'>Welcome stranger :)</span>")
+            }
+            // oznam kolo
+            this.showLog("Round <span class='gold'>" + this.round + ".</span>")
+            // priprav kostky
+            this.cup.prepadeDice()
+            // throw
+            this.throw(this.cup.getActivated())
+            // evaluate them
+            if (this.evaluate(this.cup.getActivated()) === 0) {
+                this.badLuck()
+                continue
+            }
         }
-        // oznam kolo
-        this.showLog("Round <span class='gold'>" + this.round + ".</span>")
-        // priprav kostky
-        this.cup.prepadeDice()
-        // throw
     }
 }
 
