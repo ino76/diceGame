@@ -46,6 +46,11 @@ class Dice {
             this.HTML.src = `images/${this.number}.png`
         }
     }
+
+    prepare() {
+        this._activated = true
+        this._selected = false
+    }
 }
 
 
@@ -90,8 +95,8 @@ class Cup {
                     case "selected": if(something._selected === trueOrFalse) {
                                         list.push(something)
                     }
-                    break                  
-                }  
+                    break
+                }
             }
             return list
         }
@@ -106,22 +111,39 @@ class Cup {
     }
 
 
+    selectDice(dice) {
+        dice.selectToggle()
+    }
+
+
+    unselectAll() {
+        this.dice.forEach(d => {if(d._selected) {d.selectToggle()}})
+    }
+
+
+    // nastavi vsechny kostky na unselect & activated
+    prepadeDice() {
+        this.dice.forEach(d => {
+            d.prepare()
+        })
+    }
+
+
 
     // priradi event listener kazde kostce v prohlizeci a po kliknuti
     // na jeji obrazek zjisti id obrazku a najde dotycny objekt
     // v poli 'dice': dice[e.target.id - 1]
-    addListeners() {
+    addDiceListeners() {
+
+        let dicelist = this.dice
+        let select = this.selectDice
+
         this.dice.forEach(d => d.HTML.addEventListener('click', function(e){
-            console.log(e)
-            let dice = this.dice[e.target.id - 1]
-            this.selectDice(dice)
+            console.log('zavolano')
+            let dice = dicelist[e.target.id - 1]
+            select(dice)
         }))
     }
-
-    selectDice(dice) {
-        dice.selectToggle()
-    }
-    
 }
 
 // **********************************************************************
@@ -190,24 +212,6 @@ class Player {
 
 
 
-// **********************************************************************
-// 
-//      ROUND
-// 
-//      trida round - kolo, se stara o prubeh kola od zacatku do konce
-//      hlida si vse co je potreba a zajistuje bezchybny prubeh hry
-// 
-// **********************************************************************
-
-class Round {
-    constructor() {
-        this.round = 0
-
-    }
-}
-
-
-
 
 // **********************************************************************
 // 
@@ -225,7 +229,6 @@ class Game {
     constructor() {
         // objects
         this.cup        = new Cup()
-        this.round      = new Round()
         this.player     = new Player()
 
         // points
@@ -235,6 +238,9 @@ class Game {
         // delay
         this.delay      = 2000
 
+        // round counter
+        this.round      = 1
+
         // html bindings
         this.log        = document.getElementById('log')
         this.soundCoins = document.getElementById('coins')
@@ -242,16 +248,64 @@ class Game {
         this.soundTemp  = document.getElementById('temp')
         this.soundBad   = document.getElementById('bad')
 
-        // add listener for 'click' on each dice
-        this.cup.addListeners()
+        // add listener for 'click' on each dice,
+        // and listeners for controls
+        this.cup.addDiceListeners()
+        this.addKeyboadListeners()
+
+        // zahaj hru
+        this.start()
+    }
+    
+
+
+    // listener ovladani klavesnici
+    addKeyboadListeners() {
+        document.addEventListener('keydown', function(e) {
+
+            let selectedPoints = this.evaluate(this.cup.dice)
+
+            switch(e.keyCode) {
+                // mezernik: znovu hodit neoznacenymi
+                case 32: this.tryToThrowAgain(selectedPoints)
+                    break;
+
+                // enter: ulozit a hodit znovu
+                case 13: this.savePointsAndThrowAgain(selectedPoints)
+                    break;
+            }
+        })
     }
 
+    // listener pro ovladani tlacitky
+    buttonControl(signal) {
+
+        let selectedPoints = this.evaluate(this.cup.dice)
+
+        switch(signal) {
+            // mezernik: znovu hodit neoznacenymi
+            case "space": this.tryToThrowAgain(selectedPoints)
+                break;
+
+            // enter: ulozit a hodit znovu
+            case "enter": this.savePointsAndThrowAgain(selectedPoints)
+                break;
+        
+        }
+    }
+
+
+
+    // metoda vypise zpravu na terminalu hry
     showLog(message) {
         let temp = this.log.innerHTML
         this.log.innerHTML = `<p>${message}</p>`
         this.log.innerHTML += temp
     }
 
+
+    // hlavni metoda hry - jako parametr dostane pole kostek
+    // a z toho vypocita a vrati pocet bodu
     evaluate(givenDice) {
         let one = 0
         let two = 0
@@ -281,7 +335,7 @@ class Game {
                 break;
                 case 6: six++
                 break;
-            }            
+            }
         }
 
         let numbers = [one, two, three, four, five, six]
@@ -317,7 +371,7 @@ class Game {
         }
 
         toDeactivate.forEach(d => {
-            d.activated(false)
+            d.activateToggle()
             this.cup.unselectAll()
         })
 
@@ -338,14 +392,14 @@ class Game {
         this.throw()
     }
 
-    
+
     tryToThrowAgain(selectedPoints) {
         if (selectedPoints > 0) {
             this.potPoints += selectedPoints
             document.getElementById('roundPoints').innerText = this.potPoints
             setTimeout(function(){
                 game.throw()
-            }, delay)
+            }, this.delay)
             this.soundTemp.currentTime = 0
             this.soundTemp.play()
             this.showLog(`You added <span class="white">${selectedPoints}</span> points in your pot.`)
@@ -364,7 +418,7 @@ class Game {
             document.getElementById('points').innerText = this.safePoints
             setTimeout(function(){
                 game.newThrow()
-            }, delay)
+            }, this.delay)
             this.showLog(`You saved <span class="gold">${this.potPoints + selectedPoints}</span> points into your safe.`)
             this.soundCoins.currentTime = 0
             this.soundCoins.play()
@@ -375,60 +429,19 @@ class Game {
             this.showLog(`Bad luck.`)
             this.soundBad.currentTime = 0
             this.soundBad.play()
-        }  
+        }
+    }
+
+
+
+    start() {
+        // oznam kolo
+        this.showLog("Round <span class='gold'>" + this.round + ".</span>")
+        // priprav kostky
+        this.cup.prepadeDice()
+
     }
 }
 
-
-
-
-// **********************************************************************
-// 
-//      End of class declarations
-// 
-/////////////////////////////////////
-// 
-//      Start of defining program constants, listeners etc.
-// 
-// **********************************************************************
 
 const game = new Game()
-
-
-
-
-
-// listener ovladani klavesnici
-document.addEventListener('keydown', function(e) {
-
-    let selectedPoints = game.evaluate(game.cup.selected)
-
-    switch(e.keyCode) {
-        // mezernik: znovu hodit neoznacenymi
-        case 32: game.tryToThrowAgain(selectedPoints)
-        break;
-
-        // enter: ulozit a hodit znovu
-        case 13: game.savePointsAndThrowAgain(selectedPoints)
-        break;
-    }
-})
-
-// ovladani tlacitky
-function controll(signal) {
-
-    let selectedPoints = game.evaluate(game.cup.selected)
-
-    switch(signal) {
-        // mezernik: znovu hodit neoznacenymi
-        case "mezernik": game.tryToThrowAgain(selectedPoints)
-        break;
-
-        // enter: ulozit a hodit znovu
-        case "enter": game.savePointsAndThrowAgain(selectedPoints)
-        break;
-    }
-}
-
-
-game.throw()

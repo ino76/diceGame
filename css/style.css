@@ -63,7 +63,7 @@ body {
 }
 
 
-#controlls {
+#controls {
     /* border: 1px solid red; */
     height: auto;
     width: 40vw;
@@ -142,7 +142,7 @@ body {
         width: 80vw;
     }
 
-    #controlls{
+    #controls{
         width: 50vw;
     }
 }
@@ -152,7 +152,7 @@ body {
         width: 92vw;
     }
 
-    #controlls{
+    #controls{
         width: 70vw;
         min-width: 320px;
     }
@@ -167,7 +167,7 @@ body {
     #game {
         height: 20vh;
     }
-    #controlls {   
+    #controls {   
         height: 10vh;
     }
     #score {
@@ -191,7 +191,7 @@ body {
     #game {
         height: 25vh;
     }
-    #controlls {   
+    #controls {   
         height: 15vh;
     }
     #score {
