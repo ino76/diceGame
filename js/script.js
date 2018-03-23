@@ -15,7 +15,8 @@ class Dice {
         this._activated = true // znaci zda je kostka jeste ve hre
         this._selected = false // znaci zda je kostka oznacena hracem
         this.HTML = document.getElementById(id)
-        this.number = this.throw()
+        this.number = id
+        this.activateToggle()
     }
 
     throw() {
@@ -26,31 +27,50 @@ class Dice {
     }
 
     selectToggle() {
-
         this._selected = !this._selected
-
-        if (this._selected) {
-            this.HTML.classList.add('selected')
-        } else {
-            this.HTML.classList.remove('selected')
-        }
+        this.select(this._selected)
     }
 
     activateToggle() {
-
         this._activated = !this._activated
-
-        if (this._activated) {
-            this.HTML.src = `images/${this.number}ghost.png`
-        } else {
-            this.HTML.src = `images/${this.number}.png`
-        }
+        this.activate(this._activated)
     }
 
     prepare() {
         this._activated = true
         this._selected = false
+        this.HTML.src = `images/${this.number}.png`
+        if (this.HTML.classList.contains('selected')) {
+            this.HTML.classList.remove('selected')
+        }
     }
+
+    select(value) {
+
+        if (this._activated) {
+            this._selected = value
+
+            if (this._selected) {
+                this.HTML.classList.add('selected')
+            } else {
+                this.HTML.classList.remove('selected')
+            }
+        } else {
+            this.HTML.classList.remove('selected')
+        }
+        
+    }
+    
+    activate(value) {
+        this._activated = value
+
+        if (this._activated) {
+            this.HTML.src = `images/${this.number}.png`
+        } else {
+            this.HTML.src = `images/${this.number}ghost.png`
+            this.select(false) 
+        }
+    } 
 }
 
 
@@ -235,8 +255,8 @@ class Game {
         this.safePoints = 0
         this.potPoints  = 0
 
-        // delay
-        this.delay      = 2000
+        // deltaTime
+        this.deltaTime      = 2000
 
         // round counter
         this.round      = 1
@@ -261,17 +281,19 @@ class Game {
 
     // listener ovladani klavesnici
     addKeyboadListeners() {
+        let dice = this.cup.dice
+        let selectedPoints = null // this.evaluate(dice)
+        let throwAgain = null
+        let save = null
+
         document.addEventListener('keydown', function(e) {
-
-            let selectedPoints = this.evaluate(this.cup.dice)
-
             switch(e.keyCode) {
                 // mezernik: znovu hodit neoznacenymi
-                case 32: this.tryToThrowAgain(selectedPoints)
+                case 32: console.log('hod znovu')
                     break;
 
                 // enter: ulozit a hodit znovu
-                case 13: this.savePointsAndThrowAgain(selectedPoints)
+                case 13: console.log('uloz si to')
                     break;
             }
         })
@@ -280,7 +302,7 @@ class Game {
     // listener pro ovladani tlacitky
     buttonControl(signal) {
 
-        let selectedPoints = this.evaluate(this.cup.dice)
+        let selectedPoints = null // this.evaluate(dice)
 
         switch(signal) {
             // mezernik: znovu hodit neoznacenymi
@@ -399,7 +421,7 @@ class Game {
             document.getElementById('roundPoints').innerText = this.potPoints
             setTimeout(function(){
                 game.throw()
-            }, this.delay)
+            }, this.deltaTime)
             this.soundTemp.currentTime = 0
             this.soundTemp.play()
             this.showLog(`You added <span class="white">${selectedPoints}</span> points in your pot.`)
@@ -418,7 +440,7 @@ class Game {
             document.getElementById('points').innerText = this.safePoints
             setTimeout(function(){
                 game.newThrow()
-            }, this.delay)
+            }, this.deltaTime)
             this.showLog(`You saved <span class="gold">${this.potPoints + selectedPoints}</span> points into your safe.`)
             this.soundCoins.currentTime = 0
             this.soundCoins.play()
@@ -435,11 +457,15 @@ class Game {
 
 
     start() {
+        // privitani
+        if (this.round === 1) {
+            this.showLog("<span class='green'>Welcome stranger :)</span>")
+        }
         // oznam kolo
         this.showLog("Round <span class='gold'>" + this.round + ".</span>")
         // priprav kostky
         this.cup.prepadeDice()
-
+        // throw
     }
 }
 
