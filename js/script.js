@@ -481,13 +481,18 @@ class Game {
 
 
         if (this.addedToPot) {
-            setTimeout(() => {this.start(); this.cup.activateAll()}, 2500)
+            setTimeout(() => {this.start(); this.cup.prepadeDice()}, 2500)
             this.addedToPot = false
         }
     }
 
 
     badLuck() {
+        let listOfBad = []
+        for (let d of this.cup.getActivated()) {
+            listOfBad.push(d.number)
+        }
+        this.showLog(`Bad throw: ${listOfBad.join()}`)
         this.round++
         this.roundUp = true
         this.soundBad.play()
@@ -531,7 +536,9 @@ class Game {
 
         // oznam kolo
         if (this.roundUp) {
+            this.showLog(`--------`)
             this.showLog(`Round <span class='green'>${this.round}.</span>`)
+            this.showLog(`--------`)
             this.roundUp = false
         }
         

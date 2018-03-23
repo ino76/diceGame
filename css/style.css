@@ -95,7 +95,7 @@ body {
     font-size: 1rem;
     color: #16bc47;
     color: #666666;
-    width: 65vw;
+    width: 62vw;
 }
 
 
@@ -194,7 +194,7 @@ body {
 
 @media (orientation:landscape){
     #ui {
-        height: 30vh;
+        height: 20vh;
     }
     #game {
         height: 25vh;
@@ -203,10 +203,10 @@ body {
         height: 15vh;
     }
     #score {
-        height: 12vh;
+        height: 10vh;
     }
     #log { 
-        height: 18vh;
+        height: 30vh;
     }
 
     .dice {       
