@@ -20,7 +20,8 @@ class Dice {
     }
 
     throw() {
-        let newNumber = Math.floor((Math.random() * 6) + 1)
+        // let newNumber = Math.floor((Math.random() * 6) + 1)
+        let newNumber = 5
         this.number = newNumber
         this.HTML.src = `images/${newNumber}.png`
         return newNumber
@@ -329,7 +330,6 @@ class Game {
         let points = 0
 
         let toDeactivate = []
-        let maybeDeactivate = []
 
 
         for(let d of givenDice) {
@@ -368,7 +368,9 @@ class Game {
         let counter = 1 // rovna se hodnote kterou zkoumame .. trojky, jednicky apod.
         let multiplier
         for (let n of numbers) {
-            if (n >= 3) {
+            if (n === 0 ) {
+                continue
+            } else if (n >= 3) {
                 givenDice.forEach(d => {
                     if(d.number === counter && d._selected === true && d._activated === true) {
                         toDeactivate.push(d)
@@ -376,7 +378,7 @@ class Game {
                 })
 
                 // pokud jsme na zacatku .. tzn. jde o jednicku tak nastavime nasobitel na tisic
-                if (counter === 1) {
+                if (n.number === 1) {
                     multiplier = 1000
                 } else {
                     multiplier = 100
