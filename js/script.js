@@ -200,7 +200,7 @@ class Cup {
 class Player {
     constructor() {
         this.lives = 3
-        this.rounds = 10
+        this.rounds = 2
         this.HTMLrounds = document.getElementById('rounds')
         this.live1Img = document.getElementById('live1')
         this.live2Img = document.getElementById('live2')
@@ -243,9 +243,14 @@ class Player {
     }
 
     removeRound() {
-        if (this.rounds > 1) {
+        if (this.rounds > 0) {
             this.rounds--
+            this.showRounds()
+            if (this.rounds === 0) {
+                return false
+            }
         }
+        return true
     }
 
     addLive() {
@@ -290,8 +295,6 @@ class Game {
         this.deltaTime  = 2000
 
         // round counter
-        this.round      = 1
-        this.roundUp    = true
         this.newThrow   = false
         this.betweenRounds = true
         
@@ -490,10 +493,16 @@ class Game {
             this.setPotPoints(0)
             this.showLog(`You saved <span class='gold'>${points}</span> points to your safe.`)
             this.newThrow = true
-            setTimeout(() => {this.start()}, 2500)
+            if(!this.player.removeRound()) {
+                this.endGame('Posledni vyber, dosly ti kola.')
+            } else {
+                setTimeout(() => {this.start()}, 2500)
+            }
         } else {
             this.cup.unselectAll()
         }
+
+        
     }
 
 
@@ -503,8 +512,6 @@ class Game {
             listOfBad.push(d.number)
         }
         this.showLog(`Bad throw: ${listOfBad.join()}`)
-        this.round++
-        this.roundUp = true
         this.soundBad.play()
         this.cup.deactivateAll()
         if (this.potPoints > 0) {
@@ -512,7 +519,9 @@ class Game {
         }
         this.setPotPoints(0)
 
-        
+        if(!this.player.removeRound()) {
+            this.endGame('Skoda, dosly ti kola.')
+        }
 
         if (this.player.removeLive()) {
             setTimeout(() => {
@@ -520,7 +529,7 @@ class Game {
                 this.start()
             }, 2500)
         } else {
-            this.endGame()
+            this.endGame('Skoda, dosly ti zivoty.')
         }
         
     }
@@ -570,8 +579,9 @@ class Game {
         }
     }
 
-    endGame() {
-        alert('konec hry')
+    endGame(message) {
+        this.showLog(`<span class="red">${message}</span>`)
+        alert(message)
     }
 }
 
