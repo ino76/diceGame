@@ -200,7 +200,7 @@ class Cup {
 class Player {
     constructor() {
         this.lives = 3
-        this.rounds = 2
+        this.rounds = 5
         this.HTMLrounds = document.getElementById('rounds')
         this.live1Img = document.getElementById('live1')
         this.live2Img = document.getElementById('live2')
@@ -582,6 +582,7 @@ class Game {
     endGame(message) {
         this.showLog(`<span class="red">${message}</span>`)
         alert(message)
+        location.reload()
     }
 }
 
