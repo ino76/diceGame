@@ -19,9 +19,8 @@ class Dice {
     }
 
     throw() {
-        let newNumber = Math.floor((Math.random() * 6) + 1)
-        // let newNumber = 1
         this.select(false)
+        let newNumber = Math.floor((Math.random() * 6) + 1)
         this.number = newNumber
         this.HTML.src = `images/${newNumber}.png`
         return newNumber
@@ -37,7 +36,13 @@ class Dice {
         }
     }
 
-    
+
+    turnOff() {
+        this.select(false)
+        this.activate(false)
+    }
+
+
     select(value) {
 
         if (this._activated) {
@@ -201,16 +206,16 @@ class Player {
         this.live2Img = document.getElementById('live2')
         this.live3Img = document.getElementById('live3')
         this.livesImg = [this.live1Img, this.live2Img, this.live3Img]
+
+        this.showRounds()
     }
 
     showLives() {
         for (let heart of this.livesImg) {
             if(heart.dataset.alive === "true") {
                 heart.src = "images/heart.png"
-                console.log(heart.id + " je nazivu")
             } else if(heart.dataset.alive === "false"){
                 heart.src = "images/heartDead.png"
-                console.log(heart.id + " je mrtve")
             }
         }
     }
@@ -219,7 +224,8 @@ class Player {
         this.HTMLrounds.innerText = ""
 
         for (let r = 0; r < this.rounds; r++) {
-            this.HTMLrounds.innerText += "|"
+            // znak ktery bude reprezentovat jedno kolo v html
+            this.HTMLrounds.innerText += "•"
         }
     }
 
@@ -229,8 +235,16 @@ class Player {
             deadHeart.dataset.alive = "false"
             this.lives--
             this.showLives()
-        } else {
-            console.log('uz nemas zivoty')
+            if (this.lives === 0) {
+                return false
+            }
+        }
+        return true
+    }
+
+    removeRound() {
+        if (this.rounds > 1) {
+            this.rounds--
         }
     }
 
@@ -279,11 +293,8 @@ class Game {
         this.round      = 1
         this.roundUp    = true
         this.newThrow   = false
-        this.addedToPot = false
         this.betweenRounds = true
         
-
-        this.toDeactivate = []
 
         // html bindings
         this.HTMLpot    = document.getElementById('pot')
@@ -326,7 +337,7 @@ class Game {
     // a z toho vypocita a vrati pocet bodu
     evaluate(givenDice) {
         if (this.betweenRounds) {
-            givenDice.forEach(d => d.prepareDice())
+            givenDice.forEach(d => d.prepare())
         }
 
         let one = 0
@@ -337,7 +348,7 @@ class Game {
         let six = 0
         let points = 0
         let numbers = [one, two, three, four, five, six]
-        this.toDeactivate = []
+        let toDeactivate = []
         let onesToDeactivate = []
         let fivesToDeactivate = []
 
@@ -345,10 +356,10 @@ class Game {
         for(let d of givenDice) {
             // vlozi do pole pocet vybranych cisel
             numbers[d.number - 1]++
-            if (d.number === 1) {
+            if (d.number === 1 && d._activated && d._selected) {
                 onesToDeactivate.push(d)
             }
-            if (d.number === 5) {
+            if (d.number === 5 && d._activated && d._selected) {
                 fivesToDeactivate.push(d)
             }
         }
@@ -359,12 +370,12 @@ class Game {
 
         if (one > 0 && one < 3) {
             points += 100 * one
-            this.toDeactivate = this.toDeactivate.concat(onesToDeactivate)
+            toDeactivate = toDeactivate.concat(onesToDeactivate)
         }
 
         if (five > 0 && five < 3) {
             points += 10 * five * 5
-            this.toDeactivate = this.toDeactivate.concat(fivesToDeactivate)
+            toDeactivate = toDeactivate.concat(fivesToDeactivate)
         }
 
 
@@ -375,7 +386,7 @@ class Game {
             } else if (numberTimes >= 3) {
                 givenDice.forEach(dice => {
                     if(dice.number === (index + 1) && dice._selected === true && dice._activated === true) {
-                        this.toDeactivate.push(dice)
+                        toDeactivate.push(dice)
                     }
                 })
 
@@ -389,17 +400,14 @@ class Game {
             }
         })
         
+        toDeactivate.forEach(d => {d.turnOff()})
+
+        this.cup.unselectAll()
+
 
         return points
     }
 
-
-    deactivate() {
-        this.toDeactivate.forEach(d => {
-            d.select(false)
-            d.activate(false)
-        })
-    }
 
 
     
@@ -442,7 +450,6 @@ class Game {
         this.soundRoll.currentTime = 0
         this.soundRoll.play()
         dice.forEach(d => {
-            console.log(d)
             d.throw()
         })
 
@@ -457,45 +464,35 @@ class Game {
             this.soundPot.currentTime = 0
             this.soundPot.play()
             this.addPotPoints(points)
-            this.HTMLpot.innerHTML = this.potPoints
             this.showLog(`You added <span class='white'>${points}</span> points to your pot.`)
-            this.addedToPot = true
 
             if (this.cup.getActivated().length === 0) {
                 this.newThrow = true
             }
+
+            setTimeout(() => {this.start()}, 2500)
         } else {
             this.cup.unselectAll()
         }
 
-        if (this.addedToPot) {
-            setTimeout(() => {this.start()}, 2500)
-            this.addedToPot = false
-        }
-
-        this.deactivate()
-        betweenRounds = true
+        this.betweenRounds = true
     }
 
 
     safe() {
-        let points = this.potPoints + this.evaluate(this.cup.getSelected())
+        let points = this.evaluate(this.cup.getSelected())
 
         if (points) {
+            points += this.potPoints
             this.soundCoins.currentTime = 0
             this.soundCoins.play()
             this.addSafePoints(points)
             this.setPotPoints(0)
             this.showLog(`You saved <span class='gold'>${points}</span> points to your safe.`)
-            this.addedToPot = true
+            this.newThrow = true
+            setTimeout(() => {this.start()}, 2500)
         } else {
             this.cup.unselectAll()
-        }
-
-
-        if (this.addedToPot) {
-            setTimeout(() => {this.start(); this.cup.prepareDice()}, 2500)
-            this.addedToPot = false
         }
     }
 
@@ -514,10 +511,18 @@ class Game {
             this.showLog(`Bad luck. You have lost <span class='red'>${this.potPoints}</span> points from your pot.`)
         }
         this.setPotPoints(0)
-        setTimeout(() => {
-            this.cup.prepareDice()
-            this.start()
-        }, 2500)
+
+        
+
+        if (this.player.removeLive()) {
+            setTimeout(() => {
+                this.cup.prepareDice()
+                this.start()
+            }, 2500)
+        } else {
+            this.endGame()
+        }
+        
     }
 
     setSafePoints(numberOfPoints) {
@@ -560,9 +565,13 @@ class Game {
         this.throw(this.cup.getActivated())
 
         // zjisti zda je nenulovy soucet
-        if (this.evaluate(this.cup.getActivated()) === 0) {
+        if (this.evaluate(this.cup.getActivated()) === 0 ) {
             this.badLuck()
         }
+    }
+
+    endGame() {
+        alert('konec hry')
     }
 }
 
