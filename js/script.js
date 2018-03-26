@@ -12,30 +12,21 @@ class Dice {
 
     constructor(id) {
         this.id = id
-        this._activated = true // znaci zda je kostka jeste ve hre
-        this._selected = false // znaci zda je kostka oznacena hracem
-        this.HTML = document.getElementById(id)
-        this.number = id
-        this.activateToggle()
+        this._activated = true  // znaci zda je kostka jeste ve hre
+        this._selected  = false // znaci zda je kostka oznacena hracem
+        this.HTML       = document.getElementById(id)
+        this.number     = id
     }
 
     throw() {
-        // let newNumber = Math.floor((Math.random() * 6) + 1)
-        let newNumber = 5
+        let newNumber = Math.floor((Math.random() * 6) + 1)
+        // let newNumber = 1
+        this.select(false)
         this.number = newNumber
         this.HTML.src = `images/${newNumber}.png`
         return newNumber
     }
 
-    selectToggle() {
-        this._selected = !this._selected
-        this.select(this._selected)
-    }
-
-    activateToggle() {
-        this._activated = !this._activated
-        this.activate(this._activated)
-    }
 
     prepare() {
         this._activated = true
@@ -46,6 +37,7 @@ class Dice {
         }
     }
 
+    
     select(value) {
 
         if (this._activated) {
@@ -62,6 +54,10 @@ class Dice {
         
     }
     
+    selectToggle() {
+        this.select(!this._selected)
+    }
+
     activate(value) {
         this._activated = value
 
@@ -69,7 +65,7 @@ class Dice {
             this.HTML.src = `images/${this.number}.png`
         } else {
             this.HTML.src = `images/${this.number}ghost.png`
-            this.select(false) 
+            this._selected = false
         }
     } 
 }
@@ -138,20 +134,24 @@ class Cup {
 
 
     unselectAll() {
-        this.dice.forEach(d => {if(d._selected) {d.selectToggle()}})
+        this.dice.forEach(d => {
+            if (d._selected) {
+                d.select(false)
+            }
+        })
     }
 
     deactivateAll() {
-        this.dice.forEach(d => {if(d._activated) {d.activateToggle()}})
+        this.dice.forEach(d => {if(d._activated) {d.activate(false)}})
     }
 
     activateAll() {
-        this.dice.forEach(d => {if(!d._activated) {d.activateToggle()}})
+        this.dice.forEach(d => {if(!d._activated) {d.activate(true)}})
     }
 
 
     // nastavi vsechny kostky na unselect & activated
-    prepadeDice() {
+    prepareDice() {
         this.dice.forEach(d => {
             d.prepare()
         })
@@ -273,13 +273,17 @@ class Game {
         this.potPoints  = 0
 
         // deltaTime
-        this.deltaTime      = 2000
+        this.deltaTime  = 2000
 
         // round counter
         this.round      = 1
         this.roundUp    = true
         this.newThrow   = false
         this.addedToPot = false
+        this.betweenRounds = true
+        
+
+        this.toDeactivate = []
 
         // html bindings
         this.HTMLpot    = document.getElementById('pot')
@@ -287,7 +291,7 @@ class Game {
         this.log        = document.getElementById('log')
         this.soundCoins = document.getElementById('coins')
         this.soundRoll  = document.getElementById('roll')
-        this.soundPo    = document.getElementById('pot')
+        this.soundPot   = document.getElementById('potSound')
         this.soundBad   = document.getElementById('bad')
 
         // add listener for 'click' on each dice,
@@ -296,7 +300,7 @@ class Game {
         this.addKeyboadListeners()
 
         // priprav kostky
-        this.cup.prepadeDice()
+        this.cup.prepareDice()
 
         // nastav pocet bodu
         this.setPotPoints(0)
@@ -321,6 +325,10 @@ class Game {
     // hlavni metoda hry - jako parametr dostane pole kostek
     // a z toho vypocita a vrati pocet bodu
     evaluate(givenDice) {
+        if (this.betweenRounds) {
+            givenDice.forEach(d => d.prepareDice())
+        }
+
         let one = 0
         let two = 0
         let three = 0
@@ -328,74 +336,69 @@ class Game {
         let five = 0
         let six = 0
         let points = 0
-
-        let toDeactivate = []
+        let numbers = [one, two, three, four, five, six]
+        this.toDeactivate = []
+        let onesToDeactivate = []
+        let fivesToDeactivate = []
 
 
         for(let d of givenDice) {
-            switch(d.number) {
-                case 1: one++
-                        if (d._selected) {
-                            toDeactivate.push(d)
-                        }
-                break;
-                case 2: two++
-                break;
-                case 3: three++
-                break;
-                case 4: four++
-                break;
-                case 5: five++
-                        if (d._selected) {
-                            toDeactivate.push(d)
-                        }
-                break;
-                case 6: six++
-                break;
+            // vlozi do pole pocet vybranych cisel
+            numbers[d.number - 1]++
+            if (d.number === 1) {
+                onesToDeactivate.push(d)
+            }
+            if (d.number === 5) {
+                fivesToDeactivate.push(d)
             }
         }
 
-        let numbers = [one, two, three, four, five, six]
+        one = numbers[0]
+        five = numbers[4]
+        
 
         if (one > 0 && one < 3) {
             points += 100 * one
+            this.toDeactivate = this.toDeactivate.concat(onesToDeactivate)
         }
 
         if (five > 0 && five < 3) {
             points += 10 * five * 5
+            this.toDeactivate = this.toDeactivate.concat(fivesToDeactivate)
         }
 
-        let counter = 1 // rovna se hodnote kterou zkoumame .. trojky, jednicky apod.
+
         let multiplier
-        for (let n of numbers) {
-            if (n === 0 ) {
-                continue
-            } else if (n >= 3) {
-                givenDice.forEach(d => {
-                    if(d.number === counter && d._selected === true && d._activated === true) {
-                        toDeactivate.push(d)
+        numbers.forEach((numberTimes, index) => {
+            if (numberTimes === 0) {
+                return
+            } else if (numberTimes >= 3) {
+                givenDice.forEach(dice => {
+                    if(dice.number === (index + 1) && dice._selected === true && dice._activated === true) {
+                        this.toDeactivate.push(dice)
                     }
                 })
 
-                // pokud jsme na zacatku .. tzn. jde o jednicku tak nastavime nasobitel na tisic
-                if (n.number === 1) {
+                if (index === 0) {
                     multiplier = 1000
                 } else {
                     multiplier = 100
                 }
 
-                points += multiplier * counter * (n - 2)
+                points += multiplier * (index + 1) * (numberTimes - 2)
             }
-            counter++
-        }
-
-        toDeactivate.forEach(d => {
-            d.activateToggle()
-            this.cup.unselectAll()
         })
-
+        
 
         return points
+    }
+
+
+    deactivate() {
+        this.toDeactivate.forEach(d => {
+            d.select(false)
+            d.activate(false)
+        })
     }
 
 
@@ -438,7 +441,12 @@ class Game {
     throw(dice) {
         this.soundRoll.currentTime = 0
         this.soundRoll.play()
-        dice.forEach(d => d.throw())
+        dice.forEach(d => {
+            console.log(d)
+            d.throw()
+        })
+
+        this.betweenRounds = false
     }
 
 
@@ -446,8 +454,8 @@ class Game {
         let points = this.evaluate(this.cup.getSelected())
 
         if (points) {
-            this.soundRoll.currentTime = 0
-            this.soundRoll.play()
+            this.soundPot.currentTime = 0
+            this.soundPot.play()
             this.addPotPoints(points)
             this.HTMLpot.innerHTML = this.potPoints
             this.showLog(`You added <span class='white'>${points}</span> points to your pot.`)
@@ -464,6 +472,9 @@ class Game {
             setTimeout(() => {this.start()}, 2500)
             this.addedToPot = false
         }
+
+        this.deactivate()
+        betweenRounds = true
     }
 
 
@@ -483,7 +494,7 @@ class Game {
 
 
         if (this.addedToPot) {
-            setTimeout(() => {this.start(); this.cup.prepadeDice()}, 2500)
+            setTimeout(() => {this.start(); this.cup.prepareDice()}, 2500)
             this.addedToPot = false
         }
     }
@@ -504,7 +515,7 @@ class Game {
         }
         this.setPotPoints(0)
         setTimeout(() => {
-            this.cup.prepadeDice()
+            this.cup.prepareDice()
             this.start()
         }, 2500)
     }
@@ -533,15 +544,15 @@ class Game {
     start() {
         if (this.newThrow) {
             this.newThrow = false
-            this.cup.prepadeDice()
+            this.cup.prepareDice()
         }
 
         // oznam kolo
         if (this.roundUp) {
-            this.showLog(`--------`)
-            this.showLog(`Round <span class='green'>${this.round}.</span>`)
-            this.showLog(`--------`)
             this.roundUp = false
+            this.showLog(`--------`)
+            this.showLog(`Round <span class='green'>${this.round}</span>`)
+            this.showLog(`--------`)
         }
         
 
