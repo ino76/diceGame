@@ -581,7 +581,7 @@ class Game {
 
     endGame(message) {
         this.showLog(`<span class="red">${message}</span>`)
-        alert(`${message} Celkem jsi vybral ${this.points} bodu.`)
+        alert(`${message} Celkem jsi vybral ${this.safePoints} bodu.`)
         location.reload()
     }
 }
