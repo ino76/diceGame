@@ -4,8 +4,8 @@ This is a dice game, similar as in Kingdom Come: Deliverance
 
 table of values:
 
-![diceGame/images/table.png](table)
+![table](diceGame/images/table.png)
 
-You may play it [http://dn8.cz/js/diceGame/index.html](here).
+You may play it [here](http://dn8.cz/js/diceGame/index.html).
 
-![diceGame/images/screen.png](screenshot)
+![screenshot](diceGame/images/screen.png)
