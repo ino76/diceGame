@@ -581,10 +581,9 @@ class Game {
 
     endGame(message) {
         this.showLog(`<span class="red">${message}</span>`)
-        alert(message)
+        alert(`${message} Celkem jsi vybral ${this.points} bodu.`)
         location.reload()
     }
 }
-
 
 const game = new Game()
