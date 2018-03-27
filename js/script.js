@@ -341,6 +341,7 @@ class Game {
     evaluate(givenDice) {
         if (this.betweenRounds) {
             givenDice.forEach(d => d.prepare())
+            return
         }
 
         let one = 0
@@ -468,7 +469,9 @@ class Game {
             this.soundPot.play()
             this.addPotPoints(points)
             this.showLog(`You added <span class='white'>${points}</span> points to your pot.`)
-
+            if (!this.betweenRounds) {
+                this.betweenRounds = true
+            }
             if (this.cup.getActivated().length === 0) {
                 this.newThrow = true
             }
@@ -477,8 +480,6 @@ class Game {
         } else {
             this.cup.unselectAll()
         }
-
-        this.betweenRounds = true
     }
 
 
@@ -493,6 +494,9 @@ class Game {
             this.setPotPoints(0)
             this.showLog(`You saved <span class='gold'>${points}</span> points to your safe.`)
             this.newThrow = true
+            if (!this.betweenRounds) {
+                this.betweenRounds = true
+            }
             if(!this.player.removeRound()) {
                 this.endGame('Posledni vyber, dosly ti kola.')
             } else {
