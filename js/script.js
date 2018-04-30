@@ -476,7 +476,6 @@ class Game {
       }, this.deltaTime);
 
       this.betweenRounds = true;
-      console.log("jsme mezi koly .. nastaveno");
     } else {
       if (!this.betweenRounds) {
         this.showLog(
@@ -504,7 +503,6 @@ class Game {
         this.endGame("Posledni vyber, dosly ti kola.");
       } else {
         this.betweenRounds = true;
-        console.log("jsme mezi koly .. nastaveno");
         setTimeout(() => {
           this.start();
         }, this.deltaTime);
@@ -536,7 +534,7 @@ class Game {
     this.setPotPoints(0);
 
     if (!this.player.removeRound()) {
-      this.endGame("Skoda, dosly ti kola.");
+      this.endGame(`End of the game, you have used all the rounds.`);
     } else {
       this.soundBad.play();
     }
@@ -547,7 +545,7 @@ class Game {
         this.start();
       }, this.deltaTime);
     } else {
-      this.endGame("Skoda, dosly ti zivoty.");
+      this.endGame("End of the game, you have lost all your lives.");
     }
   }
 
@@ -617,7 +615,9 @@ class Game {
   }
 
   endGame(message) {
-    this.showLog(`<span class="red">${message}</span>`);
+    this.showLog(`<span class="red">${message}</span><br><br>
+                  You have collected <span class="white">${this.safePoints}</span> <span class="gold">$</span>.
+    `);
     //        alert(`${message} Celkem jsi vybral ${this.safePoints} bodu.`)
     //        location.reload()
     this.rideSound.play();
